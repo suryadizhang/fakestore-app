@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom"; // Added Link
 import Button from "react-bootstrap/Button";
 import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
-import { useCart } from "../context/CartContext";
+import { useCart } from "../components/CartContext"; // Fixed import path
 
 function ProductDetails() {
     const { id } = useParams();
@@ -38,7 +38,7 @@ function ProductDetails() {
                     setTimeout(() => navigate("/products"), 2000);
                 })
                 .catch((error) => {
-                    console.error(error);
+                    setError("Failed to delete product. Please try again.");
                 });
         }
     };
@@ -65,7 +65,11 @@ function ProductDetails() {
                     <Button variant="primary" className="me-2" onClick={addToCart}>
                         Add to Cart
                     </Button>
-                    <Button variant="danger" onClick={deleteProduct}>
+                     {/* Edit Product Button */}
+                    <Link to={`/editproduct/${id}`}>
+                    <Button variant="warning" className="me-2">Edit Product</Button>
+                    </Link>
+                    <Button variant="danger" className="me-2" onClick={deleteProduct}>
                         Delete Product
                     </Button>
                 </Card.Body>

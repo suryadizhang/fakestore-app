@@ -1,35 +1,55 @@
-import { createContext, useReducer, useContext} from "react";
+import { createContext, useReducer, useContext } from "react";
 
 const CartContext = createContext();
 const initialState = {
-    items: [],
+    items: [], // Ensure this is an empty array
 };
 
-function carReducer(state, action) {
+function cartReducer(state, action) {
     switch (action.type) {
-        case "ADD_To_CART":
-            const existingItemIndex = state.item.findIndex(item => item.id === action.payload.id);
-            if (existingItemIndex !==-1) {
+        case "ADD_TO_CART":
+            const existingItemIndex = state.items.findIndex(item => item.id === action.payload.id);
+            if (existingItemIndex !== -1) {
                 const updateItems = [...state.items];
-                updatedItems[existingItemIndex].quantity += 1;
-                return {...state, items: updateItems};
+                updateItems[existingItemIndex].quantity += 1;
+                return { ...state, items: updateItems };
             }
             return {
-                ...state, items: [...state.items, {...action.payload, quantity: 1 }],
+                ...state,
+                items: [...state.items, { ...action.payload, quantity: 1 }],
             };
-            case "REMOVE_FROM_CART":
-                return {
-                    ...state, items: state.items.filter(item => item.id !== action.payload),
-                };
-                default:
-                    return state;
+        case "REMOVE_FROM_CART":
+            return {
+                ...state,
+                items: state.items.filter(item => item.id !== action.payload),
+            };
+        case "INCREASE_QUANTITY":
+            return {
+                ...state,
+                items: state.items.map(item =>
+                    item.id === action.payload ? { ...item, quantity: item.quantity + 1 } : item
+                ),
+            };
+        case "DECREASE_QUANTITY":
+            return {
+                ...state,
+                items: state.items.map(item =>
+                    item.id === action.payload && item.quantity > 1
+                        ? { ...item, quantity: item.quantity - 1 }
+                        : item
+                ),
+            };
+        default:
+            return state;
     }
 }
 
-export function CartProvider({children}) {
+export function CartProvider({ children }) {
     const [state, dispatch] = useReducer(cartReducer, initialState);
     return (
-        <CartContext.Provider value={{cart: state, dispatch }}>{children}</CartContext.Provider>
+        <CartContext.Provider value={{ cart: state, dispatch }}>
+            {children}
+        </CartContext.Provider>
     );
 }
 
