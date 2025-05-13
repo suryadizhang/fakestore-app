@@ -5,10 +5,12 @@ import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
 import Alert from "react-bootstrap/Alert";
+import { useCart } from "../context/CartContext";
 
 function ProductDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { dispatch } = useCart(); // Access dispatch function from CartContext
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,7 +23,7 @@ function ProductDetails() {
                 setProduct(response.data);
                 setLoading(false);
             })
-            .catch((error) => {
+            .catch(() => {
                 setError("Failed to load product details.");
                 setLoading(false);
             });
@@ -41,6 +43,12 @@ function ProductDetails() {
         }
     };
 
+    const addToCart = () => {
+        if (product) {
+            dispatch({ type: "ADD_TO_CART", payload: product });
+        }
+    };
+
     if (loading) return <p>Loading product...</p>;
     if (error) return <p>{error}</p>;
     if (deleted) return <Alert variant="success">Product deleted successfully!</Alert>;
@@ -54,11 +62,17 @@ function ProductDetails() {
                     <Card.Text>{product.description}</Card.Text>
                     <Card.Text>Category: {product.category}</Card.Text>
                     <Card.Text>Price: ${product.price}</Card.Text>
-                    <Button variant="primary" className="me-2">Add to Cart</Button>
-                    <Button variant="danger" onClick={deleteProduct}>Delete Product</Button>
+                    <Button variant="primary" className="me-2" onClick={addToCart}>
+                        Add to Cart
+                    </Button>
+                    <Button variant="danger" onClick={deleteProduct}>
+                        Delete Product
+                    </Button>
                 </Card.Body>
             </Card>
-            <Button variant="link" onClick={() => navigate("/products")} className="mt-3">Back to Products</Button>
+            <Button variant="link" onClick={() => navigate("/products")} className="mt-3">
+                Back to Products
+            </Button>
         </Container>
     );
 }
