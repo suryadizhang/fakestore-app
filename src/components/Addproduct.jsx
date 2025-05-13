@@ -34,7 +34,6 @@ function AddProduct() {
 
         try {
             const response = await axios.post("https://fakestoreapi.com/products", formData);
-            console.log(response.data);
             setProduct(response.data);
             setSubmitted(true);
             setError(null);

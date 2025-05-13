@@ -1,40 +1,22 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Button from "react-bootstrap/Button"
+import { useParams, useNavigate } from "react-router-dom";
+import Button from "react-bootstrap/Button";
 import axios from "axios";
 import Card from "react-bootstrap/Card";
 import Container from "react-bootstrap/Container";
-import Alert from 'react-bootstrap/Alert';
+import Alert from "react-bootstrap/Alert";
 
 function ProductDetails() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [deleted, setDeleted] = useState(false);
 
-    /*
-    This is a function to delete a product. It makes an HTTP delete request to the FakeStoreAPI and passes in the product id to delete
-    the desired product.
-    */
-    const deleteProduct = () => {
-        axios.delete(`https://fakestoreapi.com/products/${id}`)
-            .then((response) => {
-                setDeleted(true);
-                console.log("Product " + id + " has been deleted.")
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }
-
-    {/* 
-        Upon any detected changes in the state of 'id', make an HTTP GET request to FakeStoreAPI 
-        to retrieve the product details for that particular product id.
-        Then, save the result in the 'product' variable. 
-    */}
     useEffect(() => {
-        axios.get(`https://fakestoreapi.com/products/${id}`)
+        axios
+            .get(`https://fakestoreapi.com/products/${id}`)
             .then((response) => {
                 setProduct(response.data);
                 setLoading(false);
@@ -45,29 +27,40 @@ function ProductDetails() {
             });
     }, [id]);
 
-    if (loading) return <p>Loading products...</p>;
+    const deleteProduct = () => {
+        if (window.confirm("Are you sure you want to delete this product?")) {
+            axios
+                .delete(`https://fakestoreapi.com/products/${id}`)
+                .then(() => {
+                    setDeleted(true);
+                    setTimeout(() => navigate("/products"), 2000);
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
+    };
+
+    if (loading) return <p>Loading product...</p>;
     if (error) return <p>{error}</p>;
-    if (deleted) return (
-        <Alert variant="success">
-            Product has been deleted successfully!
-        </Alert>
-    );
+    if (deleted) return <Alert variant="success">Product deleted successfully!</Alert>;
 
     return (
-        <Container>
-            <Card className="product-card">
-                <Card.Img className="product-image" variant="top" src={product.image} alt={product.title} />
+        <Container className="mt-5">
+            <Card>
+                <Card.Img variant="top" src={product.image} alt={product.title} />
                 <Card.Body>
                     <Card.Title>{product.title}</Card.Title>
                     <Card.Text>{product.description}</Card.Text>
-                    <Card.Text>${product.price}</Card.Text>
-                    <Card.Text>{product.category}</Card.Text>
-                    <Button className="mx-2">Add to Cart</Button>
-                    <Button onClick={deleteProduct}>Delete Product</Button>
+                    <Card.Text>Category: {product.category}</Card.Text>
+                    <Card.Text>Price: ${product.price}</Card.Text>
+                    <Button variant="primary" className="me-2">Add to Cart</Button>
+                    <Button variant="danger" onClick={deleteProduct}>Delete Product</Button>
                 </Card.Body>
             </Card>
+            <Button variant="link" onClick={() => navigate("/products")} className="mt-3">Back to Products</Button>
         </Container>
-    )
+    );
 }
 
 export default ProductDetails;
